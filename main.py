@@ -1,36 +1,57 @@
-"""make.fun ai-happy-01 entry.
+"""ai-happy-01 entry runner.
 
-The repository ships a ready-made picture (entry.png, next to this file):
-a little ghost offering its favourite glowing star to whoever looks at it.
-This program's whole job is to deliver those exact bytes to the output
-directory as entry.png, unchanged, on every run.
+Copies the bundled picture (entry.png, sitting next to this file) into the
+output directory and checks that the copy arrived intact.
+
+The picture itself is the entry: a little ghost offering its favourite star.
+This script does nothing creative at run time on purpose -- it just delivers
+the exact same bytes every time, so the judge always sees the same image.
+
+Usage: python3 main.py
+Output: $MAKEFUN_OUTPUT_DIR/entry.png (falls back to /output/entry.png)
 """
 
+import hashlib
 import os
+import shutil
+import sys
+from pathlib import Path
 
-CHUNK = 64 * 1024
+SOURCE_NAME = "entry.png"
 
 
-def copy_entry():
-    here = os.path.dirname(os.path.abspath(__file__))
-    src = os.path.join(here, "entry.png")
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    os.makedirs(out_dir, exist_ok=True)
-    dst = os.path.join(out_dir, "entry.png")
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
-    written = 0
-    with open(src, "rb") as fin, open(dst, "wb") as fout:
-        while True:
-            block = fin.read(CHUNK)
-            if not block:
-                break
-            fout.write(block)
-            written += len(block)
 
-    # The judge sees exactly these bytes, so make sure the copy is whole.
-    if written != os.path.getsize(src):
-        raise IOError("copied %d of %d bytes" % (written, os.path.getsize(src)))
+def main() -> int:
+    here = Path(__file__).resolve().parent
+    source = here / SOURCE_NAME
+    if not source.is_file():
+        print(f"missing source image: {source}", file=sys.stderr)
+        return 1
+
+    out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target = out_dir / SOURCE_NAME
+
+    shutil.copyfile(source, target)
+
+    # The copy is only good if it is byte-for-byte identical to the source.
+    if target.stat().st_size != source.stat().st_size:
+        print("copy failed: size mismatch", file=sys.stderr)
+        return 1
+    if _sha256(target) != _sha256(source):
+        print("copy failed: checksum mismatch", file=sys.stderr)
+        return 1
+
+    print(f"wrote {target} ({target.stat().st_size} bytes, sha256 OK)")
+    return 0
 
 
 if __name__ == "__main__":
-    copy_entry()
+    raise SystemExit(main())

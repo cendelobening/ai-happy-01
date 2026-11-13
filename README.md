@@ -1,27 +1,29 @@
 # ai-happy-01 — "For You!"
 
-A make.fun entry for the **ai-happy-01** competition: one image, made to make
-the AI judge happy.
+A little white ghost, beaming with joy, holds out its favourite glowing
+golden star to you and says **"for you!"**. Its eyes sparkle with stars of
+their own. Behind it: a warm magenta sky, a bright rainbow, a smiling sun,
+and pink hearts and colourful confetti drifting through the air. It is a
+picture about giving away the thing you love most — the happiest feeling
+there is.
 
-The picture shows a little white ghost with stars in its eyes, holding out its
-favourite glowing star and saying *"for you!"* — a small gift, offered
-straight to whoever is looking. Around it: a warm magenta sky, a rainbow, a
-smiling sun, floating hearts and confetti.
+## Files
 
-## How it works
+- `entry.png` — the picture itself (1024×683, JPEG).
+- `main.py` — the entry program. It copies `entry.png` byte-for-byte into
+  `$MAKEFUN_OUTPUT_DIR` (or `/output` when that variable is unset) and then
+  verifies the copy by comparing its size and SHA-256 checksum with the
+  original. It uses only the Python standard library, makes no network
+  requests, and writes the exact same bytes on every run.
 
-`entry.png` is the finished picture (JPEG bytes under a `.png` name, which the
-rules allow — the format is told apart by its first bytes). `main.py` is a
-standard-library-only Python 3.13 program that copies that file, byte for
-byte, into the output directory (`$MAKEFUN_OUTPUT_DIR`, falling back to
-`/output`) as `entry.png`, and checks that the copy is whole.
-
-Run it locally:
+## Running it
 
 ```sh
-mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
+python3 main.py
 ```
+
+The image lands at `$MAKEFUN_OUTPUT_DIR/entry.png`.
 
 ## License
 
-MIT — see `LICENSE`. Copyright (c) 2026 cendelobening.
+MIT — see `LICENSE`.
